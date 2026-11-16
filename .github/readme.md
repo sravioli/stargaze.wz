@@ -11,18 +11,18 @@ Star the [WezTerm](https://wezterm.org/) plugins you use. Inspired by
 Stargaze stars every GitHub plugin WezTerm has installed, once, with the
 [GitHub CLI](https://cli.github.com/). It can unstar what you later uninstall.
 
-[Quick start](#quick-start) · [Configuration](#configuration) · [API reference](#api-reference) · [Troubleshooting](#troubleshooting) · [Development](#development) · [License](#license)
+[Quick start](#quick-start) · [Configuration](#configuration) · [API reference](#api-reference) · [Troubleshooting](#troubleshooting) · [Contributing](#contributing) · [License](#license)
 
 ## Quick start
 
 ### Requirements
 
-Requires **WezTerm [`20230320-124340-559cb7b0`](https://wezterm.org/config/lua/wezterm.plugin/require.html)
-or newer** and the [`gh`](https://cli.github.com/) CLI, logged in with
-`gh auth login`. Automatically loads
+You need WezTerm [`20230320-124340-559cb7b0`](https://wezterm.org/config/lua/wezterm.plugin/require.html)
+or newer and the [`gh`](https://cli.github.com/) CLI, logged in with
+`gh auth login`. Stargaze loads
 [warp.wz](https://github.com/sravioli/warp.wz) and
-[warden.wz](https://github.com/sravioli/warden.wz), and tries optional
-[log.wz](https://github.com/sravioli/log.wz).
+[warden.wz](https://github.com/sravioli/warden.wz) itself, and uses
+[log.wz](https://github.com/sravioli/log.wz) when it is installed.
 
 ### Install and run
 
@@ -72,19 +72,18 @@ Invalid options are logged and leave Stargaze off. Unknown options warn.
 
 Stargaze remembers what it starred in `wezterm/stargaze.wz/state.json` under
 `$XDG_DATA_HOME` (default `~/.local/share`, or `%LOCALAPPDATA%` on Windows),
-next to where WezTerm keeps its plugins, never in the config directory. Delete the file to forget everything.
-The next run re-checks each plugin and still skips ones you starred yourself.
+next to where WezTerm keeps its plugins, never in the config directory.
+Delete the file to forget everything. The next run re-checks each plugin and
+still skips ones you starred yourself.
 
 ## API reference
 
 The [API reference](../docs/api.md) lists every function, method, and value
 with its parameters and return values. It is generated from the LuaLS
-annotations in `plugin/`, so it matches the code. It has these sections:
+annotations in `plugin/`, so it matches the code. Its sections are
+[stargaze](../docs/api.md#stargaze) and [Types](../docs/api.md#types).
 
-- [stargaze](../docs/api.md#stargaze)
-- [Types](../docs/api.md#types)
-
-- `setup(opts?)` resolves options and schedules one pass. Returns `false`
+- `setup(opts?)` resolves options and schedules one pass. It returns `false`
   when options are invalid or warp.wz cannot load.
 - `run(cfg?)` runs a pass now, using the options from `setup`.
 
@@ -96,15 +95,31 @@ Run `gh auth status`. Without a login Stargaze logs one warning and stops.
 Set `dry_run = true` and open the debug overlay (`Ctrl+Shift+L`) to see what
 it would do.
 
+### Dry run prints nothing
+
+A dry run logs at `INFO` level. If log.wz is installed, its threshold must be
+`INFO` or lower when Stargaze's `setup` runs, because the logger keeps the
+threshold it saw at that moment. Another plugin that calls `log.setup` later
+can raise it again. The pass runs once per WezTerm process, so restart
+WezTerm instead of reloading the config to see it again.
+
 ### A plugin is missing from the list
 
 Only plugins WezTerm has already fetched are listed by
 `wezterm.plugin.list()`, and only GitHub HTTPS URLs are kept.
 
-## Development
+## Contributing
 
-From the repository root, with Lua 5.4 and the tools installed. Specs expect
-a `warden.wz` checkout next to this one.
+Questions, bug reports and feature requests go in the
+[issue tracker](https://github.com/sravioli/stargaze.wz/issues/new/choose).
+Report security problems as described in the
+[security policy](SECURITY.md). Everyone taking part follows the
+[code of conduct](code_of_conduct.md).
+
+### Development
+
+Run these from the repository root, with Lua 5.4 and the tools installed.
+Specs expect a `warden.wz` checkout next to this one.
 
 ```sh
 busted --verbose
@@ -113,8 +128,9 @@ selene --display-style=quiet plugin
 stylua --check plugin spec
 ```
 
-Specs mock `gh`, timers and events. Nothing touches GitHub. See the
-[contribution guide](contributing.md).
+Specs mock `gh`, timers and events, so nothing touches GitHub. Read the
+[contribution guide](contributing.md) before opening a pull request. Use
+Conventional Commits and keep documentation changes separate from code.
 
 ## License
 
