@@ -9,6 +9,12 @@ local M = {}
 
 -- Minimal warp.wz stand-in so specs run without sibling checkouts (CI).
 local warp = {
+  filesystem = {
+    mkdir = function(path)
+      M._mkdirs[#M._mkdirs + 1] = path
+      return true
+    end,
+  },
   process = {
     run = function(argv)
       local ok, success, stdout, stderr = pcall(M.run_child_process, argv)
@@ -27,6 +33,7 @@ function M._reset()
   M._handlers = {}
   M._timers = {}
   M._commands = {}
+  M._mkdirs = {}
   M._logs = { info = {}, warn = {}, error = {} }
   M._respond = function(args)
     error("unexpected command " .. table.concat(args, " "))

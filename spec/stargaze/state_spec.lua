@@ -36,6 +36,15 @@ describe("stargaze.state", function()
     assert.equals("/x.json", state.path { state_file = "/x.json" })
   end)
 
+  it("creates the folder through warp and leaves no temp file", function()
+    assert.is_true(state.save(path, { "a/b" }))
+    assert.same({ path:match "^(.*)/" }, wezterm._mkdirs)
+    assert.is_nil(io.open(path .. ".tmp", "r"))
+    -- A second save replaces the file instead of failing on it.
+    assert.is_true(state.save(path, { "c/d" }))
+    assert.same({ "c/d" }, state.load(path))
+  end)
+
   it("reports an unwritable path", function()
     assert.is_false((state.save("/nonexistent-dir/x/state.json", { "a/b" })))
   end)

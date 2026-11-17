@@ -49,18 +49,40 @@ end
 ---@param path string
 ---@param starred string[]
 ---@return boolean ok
+---@return string|nil err
 function M.save(path, starred)
-  local dir = path:match "^(.*)[/\\]" or "."
-  local argv = SEP == "\\" and { "cmd", "/c", "mkdir", dir } or { "mkdir", "-p", dir }
-  deps.warp().process.run(argv) -- fails harmlessly when the directory exists
+  local dir = path:match "^(.*)[/\\]"
+  if dir and dir ~= "" then
+    -- warp skips existing folders and refuses cmd.exe special characters.
+    local made, mkdir_err = deps.warp().filesystem.mkdir(dir)
+    if not made then
+      return false, mkdir_err
+    end
+  end
 
-  local fh, err = io.open(path, "w")
+  -- Write a temp file, then rename it: a crash mid-write must not empty the
+  -- state, or stargaze forgets which stars it added.
+  local tmp = path .. ".tmp"
+  local fh, err = io.open(tmp, "w")
   if not fh then
     return false, err
   end
-  local ok, write_err = fh:write(wezterm.serde.json_encode { starred = starred })
-  fh:close()
-  return ok ~= nil, write_err
+  local wrote, write_err = fh:write(wezterm.serde.json_encode { starred = starred })
+  local closed, close_err = fh:close()
+  if not (wrote and closed) then
+    os.remove(tmp)
+    return false, write_err or close_err
+  end
+  local renamed, rename_err = os.rename(tmp, path)
+  if not renamed then
+    -- Windows: rename does not replace an existing file.
+    os.remove(path)
+    renamed, rename_err = os.rename(tmp, path)
+  end
+  if not renamed then
+    os.remove(tmp)
+  end
+  return renamed == true, rename_err
 end
 
 return M
