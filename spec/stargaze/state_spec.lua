@@ -39,10 +39,40 @@ describe("stargaze.state", function()
   it("creates the folder through warp and leaves no temp file", function()
     assert.is_true(state.save(path, { "a/b" }))
     assert.same({ path:match "^(.*)/" }, wezterm._mkdirs)
-    assert.is_nil(io.open(path .. ".tmp", "r"))
+    for file in io.popen("ls " .. path .. ".* 2>/dev/null"):lines() do
+      error("left behind " .. file)
+    end
     -- A second save replaces the file instead of failing on it.
     assert.is_true(state.save(path, { "c/d" }))
     assert.same({ "c/d" }, state.load(path))
+  end)
+
+  it("round-trips the user's own stars and reads old files without them", function()
+    assert.is_true(state.save(path, { "a/b" }, { "c/d" }))
+    local starred, theirs = state.load(path)
+    assert.same({ "a/b" }, starred)
+    assert.same({ "c/d" }, theirs)
+    local fh = io.open(path, "w")
+    fh:write '{"starred":["a/b"]}'
+    fh:close()
+    assert.same({}, select(2, state.load(path)))
+  end)
+
+  it("keeps the old file when the final rename fails", function()
+    assert.is_true(state.save(path, { "a/b" }))
+    local rename = os.rename
+    local calls = 0
+    os.rename = function(from, to) -- luacheck: ignore 122
+      calls = calls + 1
+      if calls == 1 or calls == 3 then
+        return nil, "simulated" -- the plain rename and the retry fail
+      end
+      return rename(from, to)
+    end
+    local ok = state.save(path, { "c/d" })
+    os.rename = rename -- luacheck: ignore 122
+    assert.is_false(ok)
+    assert.same({ "a/b" }, state.load(path))
   end)
 
   it("reports an unwritable path", function()

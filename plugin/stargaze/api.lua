@@ -39,27 +39,28 @@ local function without(list, handle)
   return out
 end
 
----Run `jobs` one per timer tick. A job returns the new starred list when it
----changed something, else nil.
----@param jobs (fun(starred: string[]): string[]|nil)[]
+---Run `jobs` one per timer tick. A job returns the new starred list and/or
+---the new list of the user's own stars when it changed one, else nil.
+---@param jobs (fun(starred: string[], theirs: string[]): string[]|nil, string[]|nil)[]
 ---@param starred string[]
+---@param theirs string[]
 ---@param path string
 ---@param i integer
-local function drain(jobs, starred, path, i)
+local function drain(jobs, starred, theirs, path, i)
   local job = jobs[i]
   if not job then
     return
   end
-  local updated = job(starred)
-  if updated then
-    starred = updated
-    local saved, err = state.save(path, starred)
+  local new_starred, new_theirs = job(starred, theirs)
+  if new_starred or new_theirs then
+    starred, theirs = new_starred or starred, new_theirs or theirs
+    local saved, err = state.save(path, starred, theirs)
     if not saved then
       logger.warn(("unable to write %s: %s"):format(path, tostring(err)))
     end
   end
   wezterm.time.call_after(STEP_SECONDS, function()
-    drain(jobs, starred, path, i + 1)
+    drain(jobs, starred, theirs, path, i + 1)
   end)
 end
 
@@ -73,8 +74,8 @@ function M.run(cfg)
     return
   end
   local path = state.path(cfg)
-  local starred = state.load(path)
-  local to_star, to_unstar = plan.diff(wezterm.plugin.list(), starred, cfg)
+  local starred, theirs = state.load(path)
+  local to_star, to_unstar = plan.diff(wezterm.plugin.list(), starred, cfg, theirs)
   if #to_star + #to_unstar == 0 then
     return
   end
@@ -85,7 +86,7 @@ function M.run(cfg)
 
   local jobs = {}
   for _, handle in ipairs(to_star) do
-    jobs[#jobs + 1] = function(list)
+    jobs[#jobs + 1] = function(list, own)
       if cfg.dry_run then
         logger.info(("dry run: would star %s"):format(handle))
         return
@@ -96,7 +97,12 @@ function M.run(cfg)
         return
       end
       if already then
-        return -- the user starred it; not ours to track or ever unstar
+        -- The user starred it: not ours to unstar, and never asked about again.
+        local out = { handle }
+        for _, item in ipairs(own) do
+          out[#out + 1] = item
+        end
+        return nil, out
       end
       local ok, star_err = github.star(handle)
       if not ok then
@@ -129,11 +135,11 @@ function M.run(cfg)
   -- Dry runs change nothing, so skip the state write they would trigger.
   if cfg.dry_run then
     for _, job in ipairs(jobs) do
-      job(starred)
+      job(starred, theirs)
     end
     return
   end
-  drain(jobs, starred, path, 1)
+  drain(jobs, starred, theirs, path, 1)
 end
 
 ---Resolve `opts` and star installed plugins after the first window event.

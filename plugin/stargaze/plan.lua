@@ -38,9 +38,10 @@ end
 ---@param plugins { url: string }[] Entries from `wezterm.plugin.list()`.
 ---@param starred string[] Handles this plugin starred earlier.
 ---@param cfg Stargaze.Config
+---@param theirs? string[] Handles the user starred before stargaze could: never star or unstar.
 ---@return string[] to_star
 ---@return string[] to_unstar
-function M.diff(plugins, starred, cfg)
+function M.diff(plugins, starred, cfg, theirs)
   local ignored_repos, ignored_authors = set(cfg.ignore_repos), set(cfg.ignore_authors)
   local function ignored(handle)
     return ignored_repos[handle] or ignored_authors[handle:match "^[^/]+"]
@@ -56,6 +57,9 @@ function M.diff(plugins, starred, cfg)
   end
 
   local recorded = set(starred)
+  for handle in pairs(set(theirs or {})) do
+    recorded[handle] = true
+  end
   local to_star, to_unstar = {}, {}
   for _, handle in ipairs(order) do
     if not recorded[handle] and not ignored(handle) then

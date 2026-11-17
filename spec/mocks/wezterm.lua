@@ -69,22 +69,33 @@ end
 
 -- Just enough JSON for `{ starred = { "owner/repo", ... } }`.
 M.serde = {
+  -- Objects of string lists only: what state.lua writes.
   json_encode = function(value)
-    local items = {}
-    for i, item in ipairs(value.starred) do
-      items[i] = ('"%s"'):format(item)
+    local fields = {}
+    for _, key in ipairs { "starred", "theirs" } do
+      if value[key] then
+        local items = {}
+        for i, item in ipairs(value[key]) do
+          items[i] = ('"%s"'):format(item)
+        end
+        fields[#fields + 1] = ('"%s":[%s]'):format(key, table.concat(items, ","))
+      end
     end
-    return '{"starred":[' .. table.concat(items, ",") .. "]}"
+    return "{" .. table.concat(fields, ",") .. "}"
   end,
   json_decode = function(text)
     if not text:find('"starred"', 1, true) then
       error "invalid JSON"
     end
-    local starred = {}
-    for item in text:gmatch '"([^"]+/[^"]+)"' do
-      starred[#starred + 1] = item
+    local out = {}
+    for key, body in text:gmatch '"(%w+)":%[([^%]]*)%]' do
+      local list = {}
+      for item in body:gmatch '"([^"]+)"' do
+        list[#list + 1] = item
+      end
+      out[key] = list
     end
-    return { starred = starred }
+    return out
   end,
 }
 

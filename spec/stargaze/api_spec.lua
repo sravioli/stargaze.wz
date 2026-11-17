@@ -78,8 +78,17 @@ describe("stargaze.api", function()
   it("never records or stars a repo the user already starred", function()
     gh { ["a/one.wz"] = true }
     run()
-    assert.same({}, require("stargaze.state").load(path))
+    local starred, theirs = require("stargaze.state").load(path)
+    assert.same({}, starred)
+    assert.same({ "a/one.wz" }, theirs)
     assert.is_nil(table.concat(calls, "\n"):find("-X PUT", 1, true))
+  end)
+
+  it("does not ask GitHub again about a repo the user starred", function()
+    require("stargaze.state").save(path, {}, { "a/one.wz" })
+    gh {}
+    run()
+    assert.is_nil(table.concat(calls, "\n"):find("user/starred/a/one.wz", 1, true))
   end)
 
   it("dry run logs and changes nothing", function()
