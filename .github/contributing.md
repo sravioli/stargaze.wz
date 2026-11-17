@@ -73,11 +73,12 @@ You need:
    local stargaze = require "stargaze.api"
    ```
 
-   Specs load warden.wz from a sibling checkout,
-   so clone it next to this repository:
+   Specs load warden.wz, and warp.wz from sibling checkouts,
+   so clone them next to this repository:
 
    ```sh
    git clone https://github.com/sravioli/warden.wz ../warden.wz
+   git clone https://github.com/sravioli/warp.wz ../warp.wz
    ```
 
 4. Run the checks to make sure that the setup works:

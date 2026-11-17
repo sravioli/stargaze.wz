@@ -32,6 +32,7 @@ jobs:
             git -C "../$name.wz" checkout -q FETCH_HEAD
           done <<'EOF'
           warden main
+          warp main
           EOF
 
       - name: Install Lua
