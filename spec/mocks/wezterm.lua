@@ -2,18 +2,29 @@
 
 -- warden is a real sibling checkout, so specs exercise actual validation.
 -- selene: allow(incorrect_standard_library_use)
-local base = "../warden.wz/plugin/"
-package.path = base .. "?.lua;" .. base .. "?/init.lua;" .. package.path
+-- So is warp's filesystem module, minus mkdir, which specs record instead.
+for _, base in ipairs { "../warden.wz/plugin/", "../warp.wz/plugin/" } do
+  package.path = base .. "?.lua;" .. base .. "?/init.lua;" .. package.path
+end
 
 local M = {}
 
--- Minimal warp.wz stand-in so specs run without sibling checkouts (CI).
+local function real_fs(name)
+  return function(...)
+    return require("warp.filesystem")[name](...)
+  end
+end
+
+-- warp.wz stand-in: real filesystem helpers, recorded mkdir, scripted processes.
 local warp = {
   filesystem = {
     mkdir = function(path)
       M._mkdirs[#M._mkdirs + 1] = path
       return true
     end,
+    write_file = real_fs "write_file",
+    data_dir = real_fs "data_dir",
+    read_file = real_fs "read_file",
   },
   process = {
     run = function(argv)
@@ -41,6 +52,7 @@ function M._reset()
   M._json = {}
   M._warp = warp
   M.home_dir = "/home/user"
+  M.target_triple = "x86_64-unknown-linux-gnu"
   M._plugins = {}
   M.plugin = {
     list = function()

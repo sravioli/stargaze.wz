@@ -74,7 +74,7 @@ Invalid options are logged and leave Stargaze off. Unknown options warn.
 Stargaze remembers what it starred, and which plugins you had starred
 yourself (so GitHub is not asked about them again), in
 `wezterm/stargaze.wz/state.json` under
-`$XDG_DATA_HOME` (default `~/.local/share`, or `%LOCALAPPDATA%` on Windows),
+`$XDG_DATA_HOME` (default `~/.local/share`), or `%LOCALAPPDATA%` on Windows,
 next to where WezTerm keeps its plugins, never in the config directory.
 Delete the file to forget everything. The next run re-checks each plugin and
 still skips ones you starred yourself.
