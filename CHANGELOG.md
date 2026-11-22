@@ -2,6 +2,26 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [1.0.1](https://github.com/sravioli/stargaze.wz/compare/e3daca4aef11eb9261e0bfc0b45ad0b4331a427d..1.0.1) - 2026-11-22
+#### Bug Fixes
+- (**state**) keep the old file when the rename fails, remember own stars - ([bc5e5e8](https://github.com/sravioli/stargaze.wz/commit/bc5e5e82bcd1b0f0aaf4c713232a861b91645082)) - sravioli
+- (**state**) create the folder with warp and save atomically - ([d71353e](https://github.com/sravioli/stargaze.wz/commit/d71353ec801e1258536ea9df4478b358d9d40bb0)) - sravioli
+#### Documentation
+- (**readme**) add the coverage badge - ([2f9d98d](https://github.com/sravioli/stargaze.wz/commit/2f9d98dd063947a8b3f0619daccfb29f8532e955)) - sravioli
+- add minit.lua for reproducing bugs - ([ef0e3aa](https://github.com/sravioli/stargaze.wz/commit/ef0e3aa48919a6220fb082f1658a57e594aa8297)) - sravioli
+#### Continuous Integration
+- pass the release tag to the shell through env - ([f2c14a3](https://github.com/sravioli/stargaze.wz/commit/f2c14a32083ebc4d52027ce995bf84457d75ec00)) - sravioli
+- release from the pushed tag - ([5a8b369](https://github.com/sravioli/stargaze.wz/commit/5a8b369153df61a97ff415fd40470818182053d4)) - sravioli
+- count only the plugin's own files in coverage - ([eb301d6](https://github.com/sravioli/stargaze.wz/commit/eb301d64e42c63ce74a3cd43aafc7dcd09a664aa)) - sravioli
+- bump cocogitto/cocogitto-action from 3.11 to 4 in the actions group (#1) - ([ba48000](https://github.com/sravioli/stargaze.wz/commit/ba480001a20fdc61a18363ada8dc61371d219cf1)) - [@sravioli](https://github.com/sravioli)
+- adapt workflows to cocogitto-action v4 - ([36e2f5b](https://github.com/sravioli/stargaze.wz/commit/36e2f5bf939ee36afd1a72f1c64595d3adcc5ced)) - sravioli
+- bump cocogitto/cocogitto-action from 3.11 to 4 in the actions group - ([e3daca4](https://github.com/sravioli/stargaze.wz/commit/e3daca4aef11eb9261e0bfc0b45ad0b4331a427d)) - dependabot[bot]
+#### Refactoring
+- (**state**) store state with warp's data_dir, read_file and write_file - ([8f21354](https://github.com/sravioli/stargaze.wz/commit/8f2135478c042943eeae8ad110544ddec50f9167)) - sravioli
+- load log and ribbon from warp - ([ce6c169](https://github.com/sravioli/stargaze.wz/commit/ce6c169dfce325705712eb6ff2dc01819080243a)) - sravioli
+
+- - -
+
 ## [1.0.0](https://github.com/sravioli/stargaze.wz/compare/dfd408c9e32c775f74e4b69b065899457aff427d..1.0.0) - 2026-11-16
 #### Features
 - (**api**) star installed plugins after the first window event - ([c1e070d](https://github.com/sravioli/stargaze.wz/commit/c1e070d1944149c32aa531d61e576ea94640fad8)) - sravioli
