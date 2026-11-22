@@ -10,7 +10,6 @@ describe("stargaze dependencies", function()
 
   after_each(function()
     package.loaded["warp.api"] = nil
-    package.loaded["log.api"] = nil
   end)
 
   it("prefers local api modules before plugin URLs", function()
@@ -39,7 +38,11 @@ describe("stargaze dependencies", function()
   end)
 
   it("returns nil for an unavailable optional dependency", function()
-    local plugin, err = deps.optional "log"
+    deps.plugins.absent = { module = "absent.api", url = "https://example.invalid/absent.wz" }
+    finally(function()
+      deps.plugins.absent = nil
+    end)
+    local plugin, err = deps.optional "absent"
     assert.is_nil(plugin)
     assert.truthy(tostring(err):find("disabled in specs", 1, true))
   end)

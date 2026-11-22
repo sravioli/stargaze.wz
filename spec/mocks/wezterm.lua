@@ -6,6 +6,10 @@
 for _, base in ipairs { "../warden.wz/plugin/", "../warp.wz/plugin/" } do
   package.path = base .. "?.lua;" .. base .. "?/init.lua;" .. package.path
 end
+-- Specs use the warp stand-in below, never the sibling's real warp.api.
+package.preload["warp.api"] = function()
+  error "warp.api is replaced by the spec stand-in"
+end
 
 local M = {}
 
